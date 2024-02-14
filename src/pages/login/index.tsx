@@ -35,7 +35,7 @@ export function Login() {
         handleLogout();
     }, [])
 
-    function onSubmit(data: FormData){
+    function onSubmit(data: FormData){ // função de login do usuario
         signInWithEmailAndPassword(auth, data.email, data.password)
         .then( (user) => {
             console.log('Logado com sucesso')

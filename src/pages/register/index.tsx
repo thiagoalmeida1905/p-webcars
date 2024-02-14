@@ -26,15 +26,14 @@ export function Register() {
         mode: "onChange"
     })
 
-    useEffect( () => {
+    useEffect( () => {// verificar se tem usuario logado e deslogar
         async function handleLogout () {
             await signOut(auth)
         }
-
         handleLogout();
     }, [])
 
-    async function onSubmit(data: FormData){
+    async function onSubmit(data: FormData){// função para cadastramento de usuario
         createUserWithEmailAndPassword(auth, data.email, data.password)
         .then(async user => {
             await updateProfile(user.user, {
