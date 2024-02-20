@@ -9,15 +9,14 @@ import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { v4 as uuidV4 } from 'uuid';
-import { storage } from "../../../services/firebaseConnection";
+import { storage, db } from "../../../services/firebaseConnection";
 import { 
     ref,
     uploadBytes,
     getDownloadURL,
     deleteObject
 } from 'firebase/storage';
-
-
+import { addDoc, collection } from "firebase/firestore";
 
 // schema - zod - React Hook Forms
 const schema = z.object({
@@ -45,13 +44,12 @@ interface ImageItemProps {
 export function New() {
     const { user } = useContext(AuthContext);
 
-    const { register, handleSubmit, formState: {errors}} = useForm<FormData>({
+    const { register, handleSubmit, formState: {errors}, reset} = useForm<FormData>({
         resolver: zodResolver(schema),
         mode: 'onChange'
     })
 
     const [carImages, setCarImages] = useState<ImageItemProps[]>([]) // array contendo as imagens
-
 
     async function handleFile(e: ChangeEvent<HTMLInputElement>) { // Função p/ pegar as imagens
         if ( e.target.files && e.target.files[0]){ 
@@ -65,7 +63,7 @@ export function New() {
         }
     }
 
-    async function handleUpload (image: File){ //função para 
+    async function handleUpload (image: File){ //
         if(!user?.uid) {
             return;
         }
@@ -100,7 +98,40 @@ export function New() {
     }
 
     function onSubmit(data: FormData){
-        console.log(data)
+        if (carImages.length === 0) {
+            alert("Envie alguma imagem deste carro")
+            return
+        }
+        const carListImages = carImages.map ( car => {
+            return {
+                uid: car.uid,
+                name: car.name,
+                url: car.url
+            }
+        })
+        addDoc(collection(db, "cars"), {
+            name:data.name,
+            model: data.model,
+            whatsapp: data.whatsapp,
+            city: data.city,
+            year: data.year,
+            km: data.km,
+            price: data.price,
+            description: data.description,
+            created: new Date(),
+            owner: user?.name,
+            uid: user?.uid,
+            images: carListImages,
+        })
+        .then (() => {
+            reset();
+            setCarImages([]);
+            console.log('Cadastrado com sucesso');
+
+        })
+        .catch((error) => {
+            console.log(error)
+        })
     }
 
 
@@ -246,4 +277,3 @@ export function New() {
         </Container>
     )
 }
-
