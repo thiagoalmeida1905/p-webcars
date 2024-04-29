@@ -3,7 +3,8 @@ import { Container } from "../../components/container";
 import { DashboardHeader } from "../../components/panelheader";
 import { FiTrash } from "react-icons/fi";
 import { collection, getDocs, where, query, doc, deleteDoc } from "firebase/firestore";
-import { db } from "../../services/firebaseConnection";
+import { db, storage } from "../../services/firebaseConnection";
+import { ref, deleteObject } from "firebase/storage";
 import { AuthContext } from "../../contexts/AuthContext";
 
 interface CarProps {
@@ -64,12 +65,25 @@ export function Dashboard() {
         loadcars();
     }, [user])
 
-    async function handleDeleteCar(id: string) {
-        const docRef = doc(db, "cars", id)
-        await deleteDoc(docRef);
-        setCars(cars.filter(car => car.id !== id))
-    }
+    async function handleDeleteCar(car: CarProps) {
 
+        const itemCar = car;
+
+        const docRef = doc(db, "cars", itemCar.id)
+        await deleteDoc(docRef);
+
+        itemCar.images.map( async (image) => {
+            const imagePath = `images/${image.uid}/${image.name}`;
+            const imageRef = ref(storage, imagePath);
+
+            try {
+                await deleteObject(imageRef);
+                setCars(cars.filter(car => car.id !== itemCar.id));
+            } catch(error) {
+                console.log("ERRO AO DELETAR ESSA IMAGEM");
+            }
+        })
+    }
 
     return (
         <Container>
@@ -80,7 +94,7 @@ export function Dashboard() {
                     <section className="w-full bg-white rounded-lg relative" key={car.id}>
 
                         <button
-                            onClick={() => handleDeleteCar(car.id)}
+                            onClick={() => handleDeleteCar(car)}
                             className="absolute bg-white w-14 h-14 rounded-full flex items-center justify-center right-2 top-2 drop-shadow"
                         >
                             <FiTrash size={26} color="#000" />
