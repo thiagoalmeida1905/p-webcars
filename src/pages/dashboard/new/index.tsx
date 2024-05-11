@@ -17,6 +17,7 @@ import {
     deleteObject
 } from 'firebase/storage';
 import { addDoc, collection } from "firebase/firestore";
+import toast from "react-hot-toast";
 
 // schema - zod - React Hook Forms
 const schema = z.object({
@@ -99,7 +100,7 @@ export function New() {
 
     function onSubmit(data: FormData){
         if (carImages.length === 0) {
-            alert("Envie alguma imagem deste carro")
+            toast.error("Envie pelo menos 2 imagens!")
             return
         }
         const carListImages = carImages.map ( car => {
@@ -110,7 +111,7 @@ export function New() {
             }
         })
         addDoc(collection(db, "cars"), {
-            name:data.name,
+            name:data.name.toUpperCase(),
             model: data.model,
             whatsapp: data.whatsapp,
             city: data.city,
@@ -126,14 +127,13 @@ export function New() {
         .then (() => {
             reset();
             setCarImages([]);
-            console.log('Cadastrado com sucesso');
+            toast.success("Carro cadastrado com sucesso!")
 
         })
         .catch((error) => {
             console.log(error)
         })
     }
-
 
 //------------------------      RENDER         -------------------------------
     return (

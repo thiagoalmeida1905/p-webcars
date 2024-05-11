@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { auth } from '../../services/firebaseConnection'
+import toast from 'react-hot-toast'
 
 
 
@@ -40,10 +41,12 @@ export function Login() {
         .then( (user) => {
             console.log('Logado com sucesso')
             console.log(user)
+            toast.success("Logado com sucesso!")
             navigate('/dashboard', {replace: true})
         })
         .catch( () => {
             console.log('Erro ao logar')
+            toast.error("erro ao fazer login")
         })
     }
 
